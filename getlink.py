@@ -10,11 +10,21 @@ import datetime
 import os
 
 import requests
+import math
 
 def is_file(data):
     if data['size'] == 0 and data['pid'] == None:
         return False
     return True
+
+def convert_size(size_bytes):
+   if size_bytes == 0:
+       return "0B"
+   size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+   i = int(math.floor(math.log(size_bytes, 1024)))
+   p = math.pow(1024, i)
+   s = round(size_bytes / p, 2)
+   return "%s %s" % (s, size_name[i])
 
 def get_link(foledr_id, folder_path = "", page = 1, per_page = 50):
     url = f"https://www.fshare.vn/api/v3/files/folder?linkcode={foledr_id}&sort=type,name&page={page}&per-page={per_page}"
@@ -38,8 +48,8 @@ def get_link(foledr_id, folder_path = "", page = 1, per_page = 50):
             if not is_file(item):
                 get_link(item['linkcode'], data['current']['path'])
             else:
-                out_put = f"https://www.fshare.vn/file/{item['linkcode']}|{item['name']}|{data['current']['path']}"
-                # print(out_put)
+                out_put = f"[https://www.fshare.vn/file/{item['linkcode']}] {convert_size(item['size'])} {item['name']}"
+                #print(out_put)
                 with open(file_name, 'a', encoding="utf-8") as f:
                     f.write(f"{out_put}\n")
         if 'next' in data['_links']:
